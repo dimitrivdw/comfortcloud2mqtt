@@ -22,4 +22,4 @@ jobs:
     - name: Build the Docker image
       run: docker build . --file Dockerfile --tag dimitrivdw/comfortcloud2mqtt
     - name: Push the Docker image
-      run: docker push -t dimitrivdw/comfortcloud2mqtt 
+      run: docker push dimitrivdw/comfortcloud2mqtt 
