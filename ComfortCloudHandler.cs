@@ -25,17 +25,12 @@ internal class ComfortCloudHandler
         try
         {
             Console.WriteLine("Starting python...");
-            //Runtime.PythonDLL = @"C:\Users\DVandewalle\AppData\Local\Programs\Python\Python312\python312.dll";
-            //var pathToVirtualEnv = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), @"..\..\..\venv"));
+
             var pathToVirtualEnv = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), @"venv"));
             Console.WriteLine("venv = " + pathToVirtualEnv);
             Environment.SetEnvironmentVariable("PYTHONHOME", "/root/miniconda3/lib");
             Environment.SetEnvironmentVariable("PYTHONNET_PYDLL", "/root/miniconda3/lib/libpython3.12.so");
 
-            //Environment.SetEnvironmentVariable("PATH", pathToVirtualEnv, EnvironmentVariableTarget.Process);
-            //Environment.SetEnvironmentVariable("PYTHONPATH", $"{pathToVirtualEnv}/Lib/pcomfortcloud", EnvironmentVariableTarget.Process);
-            //Environment.SetEnvironmentVariable("PYTHONHOME", pathToVirtualEnv, EnvironmentVariableTarget.Process);
-            //Environment.SetEnvironmentVariable("PYTHONPATH", $"{pathToVirtualEnv}\\Lib\\site-packages;{pathToVirtualEnv}\\Lib", EnvironmentVariableTarget.Process);
             PythonEngine.Initialize();
 
             PythonEngine.PythonHome = pathToVirtualEnv;
@@ -53,12 +48,7 @@ internal class ComfortCloudHandler
                 scope.Exec("clientsession = pcomfortcloud.Session('" + Username + "','" + Password + "')");
                 scope.Exec("clientsession.login()");
                 scope.Exec("session = pcomfortcloud.ApiClient(clientsession)");
-
-                // _session = comfortcloud.ApiClient(Username, Password);
-                // _session.start_session();
             }
-
-
 
             await Task.Factory.StartNew(() =>
                 {
@@ -117,6 +107,26 @@ internal class ComfortCloudHandler
                 scope.Exec("kwargs['mode'] = pcomfortcloud.constants.OperationMode['" + FirstLetterUppercase(operationMode) + "']");
             }
             scope.Exec("kwargs['power'] = pcomfortcloud.constants.Power['" + (operationMode == "off" ? "Off" : "On") + "']");
+            scope.Exec("session.set_device('" + deviceId + "',**kwargs)");
+        }
+    }
+
+    public void SetTargetTemperature(string deviceId, decimal temperature)
+    {
+        using (Py.GIL())
+        {
+            scope.Exec("kwargs = {}");
+            scope.Exec("kwargs['temperature'] = " + temperature);
+            scope.Exec("session.set_device('" + deviceId + "',**kwargs)");
+        }
+    }
+
+    public void SetFanspeed(string deviceId, string fanSpeed)
+    {
+        using (Py.GIL())
+        {
+            scope.Exec("kwargs = {}");
+            scope.Exec("kwargs['fanSpeed'] = pcomfortcloud.constants.fanSpeed['" + fanSpeed + "']");
             scope.Exec("session.set_device('" + deviceId + "',**kwargs)");
         }
     }

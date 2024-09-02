@@ -69,6 +69,16 @@ internal class MqttHandler
                 case "mode":
                     EventHandler.SetMode(splitted[2], Encoding.UTF8.GetString(args.ApplicationMessage.PayloadSegment));
                     break;
+                case "fanMode":
+                    EventHandler.SetFanSpeed(splitted[2], Encoding.UTF8.GetString(args.ApplicationMessage.PayloadSegment));
+                    break;
+                case "temperature":
+                    decimal temperature = 0;
+                    if (decimal.TryParse(Encoding.UTF8.GetString(args.ApplicationMessage.PayloadSegment), CultureInfo.InvariantCulture, out temperature))
+                    {
+                        EventHandler.SetTemperature(splitted[2], temperature);
+                    }
+                    break;
             }
         }
     }

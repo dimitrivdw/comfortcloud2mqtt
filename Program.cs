@@ -41,8 +41,18 @@ public partial class Program : IComfortCloudEventHandler, IMQTTEventHandler
         mqtt.ReportDevice(device);
     }
 
+    public void SetFanSpeed(string deviceId, string fanspeed)
+    {
+        comfortCloud.SetFanspeed(deviceId, fanspeed);
+    }
+
     public void SetMode(string deviceId, string mode)
     {
         comfortCloud.SetMode(deviceId, mode);
+    }
+
+    public void SetTemperature(string deviceId, decimal temperature)
+    {
+        comfortCloud.SetTargetTemperature(deviceId, temperature);
     }
 }
