@@ -20,8 +20,7 @@ A Docker Hub image is also available: https://hub.docker.com/r/dimitrivdw/comfor
 
 # Examples
 ## Docker compose
-
-    services:
+    `services:
       comfortcloud2mqtt:
         image: "dimitrivdw/comfortcloud2mqtt"
         restart: unless-stopped
@@ -32,3 +31,4 @@ A Docker Hub image is also available: https://hub.docker.com/r/dimitrivdw/comfor
           MQTTPASSWORD: "mqttPassword"
           COMFORTCLOUDUSERNAME: "ComfortCloudUsername"
           COMFORTCLOUDPASSWORD: "ComfortCloudPassword"
+`
