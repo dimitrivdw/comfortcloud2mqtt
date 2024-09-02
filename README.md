@@ -22,14 +22,14 @@ A Docker Hub image is also available: https://hub.docker.com/r/dimitrivdw/comfor
 ## Docker compose
 ```yaml
 services:
-      comfortcloud2mqtt:
-        image: "dimitrivdw/comfortcloud2mqtt"
-        restart: unless-stopped
-        environment:
-          MQTTHOSTNAME: "myHostNameOrIP"
-          MQTTPORT: "1883"
-          MQTTUSERNAME: "mqttUsername"
-          MQTTPASSWORD: "mqttPassword"
-          COMFORTCLOUDUSERNAME: "ComfortCloudUsername"
-          COMFORTCLOUDPASSWORD: "ComfortCloudPassword"
+  comfortcloud2mqtt:
+    image: "dimitrivdw/comfortcloud2mqtt"
+    restart: unless-stopped
+    environment:
+      MQTTHOSTNAME: "myHostNameOrIP"
+      MQTTPORT: "1883"
+      MQTTUSERNAME: "mqttUsername"
+      MQTTPASSWORD: "mqttPassword"
+      COMFORTCLOUDUSERNAME: "ComfortCloudUsername"
+      COMFORTCLOUDPASSWORD: "ComfortCloudPassword"
 ```
