@@ -19,4 +19,16 @@ This project is written to function within a docker container for easy deploymen
 A Docker Hub image is also available: https://hub.docker.com/r/dimitrivdw/comfortcloud2mqtt
 
 # Examples
+## Docker compose
 
+    services:
+      comfortcloud2mqtt:
+        image: "dimitrivdw/comfortcloud2mqtt"
+        restart: unless-stopped
+        environment:
+          MQTTHOSTNAME: "myHostNameOrIP"
+          MQTTPORT: "1883"
+          MQTTUSERNAME: "mqttUsername"
+          MQTTPASSWORD: "mqttPassword"
+          COMFORTCLOUDUSERNAME: "ComfortCloudUsername"
+          COMFORTCLOUDPASSWORD: "ComfortCloudPassword"
