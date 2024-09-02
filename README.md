@@ -4,6 +4,14 @@ This project has the objective to connect to the Panasonic Comfort Cloud and pub
 - HomeAssistant
 - Openhab (tested in 4.2.1 where the HVAC discovery was added)
 
+The following functionality is implemented:
+- Discovery of all Comfort Cloud devices and publishing according to HomeAssistant standard (https://www.home-assistant.io/integrations/climate.mqtt/)
+- Periodic updates of the devices over MQTT
+- Allows sending of
+  - setTemperature
+  - fanSpeed
+  - mode
+
 # Dependencies
 
 ## pcomfortcloud
