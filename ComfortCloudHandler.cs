@@ -54,33 +54,40 @@ internal class ComfortCloudHandler
                 {
                     while (true)
                     {
-                        using (Py.GIL())
+                        try
                         {
-
-                            scope.Exec("devices = session.get_devices()");
-                            dynamic devices = scope.Eval("devices");
-                            //dynamic devices = _session.get_devices();
-
-                            foreach (dynamic device in devices)
+                            using (Py.GIL())
                             {
 
-                                Device d = new Device()
+                                scope.Exec("devices = session.get_devices()");
+                                dynamic devices = scope.Eval("devices");
+                                //dynamic devices = _session.get_devices();
+
+                                foreach (dynamic device in devices)
                                 {
-                                    Id = device["id"],
-                                    Name = device["name"],
-                                    Model = device["model"],
-                                };
 
-                                dynamic deviceResult = scope.Eval("session.get_device('" + d.Id + "')");
-                                d.Power = deviceResult["parameters"]["power"].ToString() == "Power.On";
-                                d.Mode = deviceResult["parameters"]["mode"].ToString().ToLower().Replace("operationmode.", "");
-                                d.CurrentTemperature = decimal.Parse(deviceResult["parameters"]["temperatureInside"].ToString(), CultureInfo.InvariantCulture);
-                                d.SetTemperature = decimal.Parse(deviceResult["parameters"]["temperature"].ToString(), CultureInfo.InvariantCulture);
-                                d.FanMode = deviceResult["parameters"]["fanSpeed"].ToString().ToLower().Replace("fanspeed.", "");
+                                    Device d = new Device()
+                                    {
+                                        Id = device["id"],
+                                        Name = device["name"],
+                                        Model = device["model"],
+                                    };
+
+                                    dynamic deviceResult = scope.Eval("session.get_device('" + d.Id + "')");
+                                    d.Power = deviceResult["parameters"]["power"].ToString() == "Power.On";
+                                    d.Mode = deviceResult["parameters"]["mode"].ToString().ToLower().Replace("operationmode.", "");
+                                    d.CurrentTemperature = decimal.Parse(deviceResult["parameters"]["temperatureInside"].ToString(), CultureInfo.InvariantCulture);
+                                    d.SetTemperature = decimal.Parse(deviceResult["parameters"]["temperature"].ToString(), CultureInfo.InvariantCulture);
+                                    d.FanMode = deviceResult["parameters"]["fanSpeed"].ToString().ToLower().Replace("fanspeed.", "");
 
 
-                                EventHandler.DeviceUpdated(d);
+                                    EventHandler.DeviceUpdated(d);
+                                }
                             }
+                        }
+                        catch(Exception exc)
+                        {
+                            Console.WriteLine("Error while getting data: " + exc);
                         }
                         Thread.Sleep(60000);
                     }
