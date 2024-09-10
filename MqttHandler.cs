@@ -141,6 +141,9 @@ internal class MqttHandler
         message = new MqttApplicationMessage() { Topic = climatePrefix + "/state/fanMode", PayloadSegment = Encoding.UTF8.GetBytes(device.FanMode) };
         await mqttClient.PublishAsync(message);
 
+        message = new MqttApplicationMessage() { Topic = climatePrefix + "/state/temperature", PayloadSegment = Encoding.UTF8.GetBytes(device.SetTemperature) };
+        await mqttClient.PublishAsync(message);
+
         
     }
 }
