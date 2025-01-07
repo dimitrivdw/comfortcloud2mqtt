@@ -74,6 +74,7 @@ internal class MqttHandler
                     break;
                 case "temperature":
                     decimal temperature = 0;
+                    Console.WriteLine("trying to set temperature for device " + splitted[2] + ": " + Encoding.UTF8.GetString(args.ApplicationMessage.PayloadSegment));
                     if (decimal.TryParse(Encoding.UTF8.GetString(args.ApplicationMessage.PayloadSegment), CultureInfo.InvariantCulture, out temperature))
                     {
                         EventHandler.SetTemperature(splitted[2], temperature);
