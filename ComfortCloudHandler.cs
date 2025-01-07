@@ -14,6 +14,8 @@ internal class ComfortCloudHandler
     dynamic constants;
 
     PyModule scope;
+    DateTime _lastUpdateSent = DateTime.MinValue;
+    Dictionary<string, List<string>> _kwargsToBuild = new Dictionary<string, List<string>>();
  
     public ComfortCloudHandler()
     {
@@ -52,36 +54,59 @@ internal class ComfortCloudHandler
 
             await Task.Factory.StartNew(() =>
                 {
+                    DateTime LastChecked = DateTime.MinValue;
                     while (true)
                     {
                         try
                         {
-                            using (Py.GIL())
+                            if ((DateTime.Now - LastChecked).TotalSeconds > 59)
                             {
-
-                                scope.Exec("devices = session.get_devices()");
-                                dynamic devices = scope.Eval("devices");
-                                //dynamic devices = _session.get_devices();
-
-                                foreach (dynamic device in devices)
+                                using (Py.GIL())
                                 {
 
-                                    Device d = new Device()
+                                    scope.Exec("devices = session.get_devices()");
+                                    dynamic devices = scope.Eval("devices");
+                                    //dynamic devices = _session.get_devices();
+
+                                    foreach (dynamic device in devices)
                                     {
-                                        Id = device["id"],
-                                        Name = device["name"],
-                                        Model = device["model"],
-                                    };
 
-                                    dynamic deviceResult = scope.Eval("session.get_device('" + d.Id + "')");
-                                    d.Power = deviceResult["parameters"]["power"].ToString() == "Power.On";
-                                    d.Mode = deviceResult["parameters"]["mode"].ToString().ToLower().Replace("operationmode.", "");
-                                    d.CurrentTemperature = decimal.Parse(deviceResult["parameters"]["temperatureInside"].ToString(), CultureInfo.InvariantCulture);
-                                    d.SetTemperature = decimal.Parse(deviceResult["parameters"]["temperature"].ToString(), CultureInfo.InvariantCulture);
-                                    d.FanMode = deviceResult["parameters"]["fanSpeed"].ToString().ToLower().Replace("fanspeed.", "");
+                                        Device d = new Device()
+                                        {
+                                            Id = device["id"],
+                                            Name = device["name"],
+                                            Model = device["model"],
+                                        };
+
+                                        dynamic deviceResult = scope.Eval("session.get_device('" + d.Id + "')");
+                                        d.Power = deviceResult["parameters"]["power"].ToString() == "Power.On";
+                                        d.Mode = deviceResult["parameters"]["mode"].ToString().ToLower().Replace("operationmode.", "");
+                                        d.CurrentTemperature = decimal.Parse(deviceResult["parameters"]["temperatureInside"].ToString(), CultureInfo.InvariantCulture);
+                                        d.SetTemperature = decimal.Parse(deviceResult["parameters"]["temperature"].ToString(), CultureInfo.InvariantCulture);
+                                        d.FanMode = deviceResult["parameters"]["fanSpeed"].ToString().ToLower().Replace("fanspeed.", "");
 
 
-                                    EventHandler.DeviceUpdated(d);
+                                        EventHandler.DeviceUpdated(d);
+                                    }
+                                }
+                            }
+                            lock (_kwargsToBuild)
+                            {
+                                if (_kwargsToBuild.Count > 0 && (DateTime.Now - _lastUpdateSent).TotalSeconds > 3)
+                                {
+                                    using (Py.GIL())
+                                    {
+                                        foreach (var deviceArgs in _kwargsToBuild)
+                                        {
+                                            scope.Exec("kwargs = {}");
+                                            foreach (string argsToUse in deviceArgs.Value)
+                                            {
+                                                scope.Exec(argsToUse);
+                                            }
+                                            scope.Exec("session.set_device('" + deviceArgs.Key + "',**kwargs)");
+                                        }
+                                        _kwargsToBuild.Clear();
+                                    }
                                 }
                             }
                         }
@@ -89,7 +114,7 @@ internal class ComfortCloudHandler
                         {
                             Console.WriteLine("Error while getting data: " + exc);
                         }
-                        Thread.Sleep(60000);
+                        Thread.Sleep(3000);
                     }
 
                 }, TaskCreationOptions.LongRunning);
@@ -106,36 +131,72 @@ internal class ComfortCloudHandler
 
     public void SetMode(string deviceId, string operationMode)
     {
-        using (Py.GIL())
+        lock(_kwargsToBuild)
         {
-            scope.Exec("kwargs = {}");
+            _lastUpdateSent = DateTime.Now;
+
+            if(!_kwargsToBuild.ContainsKey(deviceId))
+            {
+                _kwargsToBuild.Add(deviceId, new List<string>());
+            }
+            
             if (operationMode != "off")
             {
-                scope.Exec("kwargs['mode'] = pcomfortcloud.constants.OperationMode['" + FirstLetterUppercase(operationMode) + "']");
+                _kwargsToBuild[deviceId].Add("kwargs['mode'] = pcomfortcloud.constants.OperationMode['" + FirstLetterUppercase(operationMode) + "']");
             }
-            scope.Exec("kwargs['power'] = pcomfortcloud.constants.Power['" + (operationMode == "off" ? "Off" : "On") + "']");
-            scope.Exec("session.set_device('" + deviceId + "',**kwargs)");
+
+            _kwargsToBuild[deviceId].Add("kwargs['power'] = pcomfortcloud.constants.Power['" + (operationMode == "off" ? "Off" : "On") + "']");
         }
+        // using (Py.GIL())
+        // {
+        //     scope.Exec("kwargs = {}");
+            
+           
+        //     scope.Exec("session.set_device('" + deviceId + "',**kwargs)");
+        // }
     }
 
     public void SetTargetTemperature(string deviceId, decimal temperature)
     {
-        using (Py.GIL())
+
+        lock(_kwargsToBuild)
         {
-            scope.Exec("kwargs = {}");
-            scope.Exec("kwargs['temperature'] = " + temperature);
-            scope.Exec("session.set_device('" + deviceId + "',**kwargs)");
+            _lastUpdateSent = DateTime.Now;
+
+            if(!_kwargsToBuild.ContainsKey(deviceId))
+            {
+                _kwargsToBuild.Add(deviceId, new List<string>());
+            }
+            
+            _kwargsToBuild[deviceId].Add("kwargs['temperature'] = " + temperature);
         }
+        // using (Py.GIL())
+        // {
+        //     scope.Exec("kwargs = {}");
+        //     scope.Exec("kwargs['temperature'] = " + temperature);
+        //     scope.Exec("session.set_device('" + deviceId + "',**kwargs)");
+        // }
     }
 
     public void SetFanspeed(string deviceId, string fanSpeed)
     {
-        using (Py.GIL())
+        lock(_kwargsToBuild)
         {
-            scope.Exec("kwargs = {}");
-            scope.Exec("kwargs['fanSpeed'] = pcomfortcloud.constants.fanSpeed['" + fanSpeed + "']");
-            scope.Exec("session.set_device('" + deviceId + "',**kwargs)");
+            _lastUpdateSent = DateTime.Now;
+
+            if(!_kwargsToBuild.ContainsKey(deviceId))
+            {
+                _kwargsToBuild.Add(deviceId, new List<string>());
+            }
+            
+            _kwargsToBuild[deviceId].Add("kwargs['fanSpeed'] = pcomfortcloud.constants.fanSpeed['" + fanSpeed + "']");
         }
+        // using (Py.GIL())
+        // {
+        //     scope.Exec("kwargs = {}");
+        //     scope.Exec("kwargs['fanSpeed'] = pcomfortcloud.constants.fanSpeed['" + fanSpeed + "']");
+        //     scope.Exec("session.set_device('" + deviceId + "',**kwargs)");
+        // }
     }
 
     public string FirstLetterUppercase(string text)
