@@ -1,5 +1,6 @@
 // See https://aka.ms/new-console-template for more information
 using System.Globalization;
+using System.Text.Json;
 using Python.Runtime;
 
 internal class ComfortCloudHandler
@@ -95,6 +96,7 @@ internal class ComfortCloudHandler
                             {
                                 if (_kwargsToBuild.Count > 0 && (DateTime.Now - _lastUpdateSent).TotalSeconds > 3)
                                 {
+                                    Console.WriteLine("executing " + JsonSerializer.Serialize(_kwargsToBuild));
                                     using (Py.GIL())
                                     {
                                         foreach (var deviceArgs in _kwargsToBuild)
