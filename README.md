@@ -1,4 +1,4 @@
-# ComfortCloud2Mqtt
+# ComfortCloud2Mqtt 
 
 This project has the objective to connect to the Panasonic Comfort Cloud and publishes the data on an MQTT broker, using the HomeAssistant discovery protocol, making this usable in at least the following products:
 - HomeAssistant
