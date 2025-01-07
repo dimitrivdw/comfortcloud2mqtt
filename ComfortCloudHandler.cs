@@ -88,6 +88,7 @@ internal class ComfortCloudHandler
 
                                         EventHandler.DeviceUpdated(d);
                                     }
+                                    LastChecked = DateTime.Now;
                                 }
                             }
                             lock (_kwargsToBuild)
