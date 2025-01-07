@@ -120,7 +120,7 @@ internal class MqttHandler
 
         if (!deviceIds.Contains(device.Id))
         {
-            await mqttClient.SubscribeAsync(climatePrefix + "/command/mode", MQTTnet.Protocol.MqttQualityOfServiceLevel.ExactlyOnce);
+            await mqttClient.SubscribeAsync(climatePrefix + "/command/+", MQTTnet.Protocol.MqttQualityOfServiceLevel.ExactlyOnce);
             deviceIds.Add(device.Id);
         }
 
