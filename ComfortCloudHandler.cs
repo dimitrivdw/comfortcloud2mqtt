@@ -113,9 +113,13 @@ internal class ComfortCloudHandler
                                 }
                             }
                         }
-                        catch(Exception exc)
+                        catch (Exception exc)
                         {
                             Console.WriteLine("Error while getting data: " + exc);
+                            
+                            scope.Exec("clientsession = pcomfortcloud.Session('" + Username + "','" + Password + "')");
+                            scope.Exec("clientsession.login()");
+                            scope.Exec("session = pcomfortcloud.ApiClient(clientsession)");
                         }
                         Thread.Sleep(3000);
                     }
