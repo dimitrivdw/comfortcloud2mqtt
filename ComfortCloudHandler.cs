@@ -99,14 +99,19 @@ internal class ComfortCloudHandler
                                     Console.WriteLine("executing " + JsonSerializer.Serialize(_kwargsToBuild));
                                     using (Py.GIL())
                                     {
-                                        foreach (var deviceArgs in _kwargsToBuild)
+                                        foreach(var device in _kwargsToBuild.GroupBy(kv => kv.Key))
                                         {
-                                            scope.Exec("kwargs = {}");
-                                            foreach (string argsToUse in deviceArgs.Value)
+                                            Console.WriteLine("updating device " + device.Key + " with " + JsonSerializer.Serialize(device));
+
+                                            foreach (var deviceArgs in device)
                                             {
-                                                scope.Exec(argsToUse);
+                                                scope.Exec("kwargs = {}");
+                                                foreach (string argsToUse in deviceArgs.Value)
+                                                {
+                                                    scope.Exec(argsToUse);
+                                                }
+                                                scope.Exec("session.set_device('" + deviceArgs.Key + "',**kwargs)");
                                             }
-                                            scope.Exec("session.set_device('" + deviceArgs.Key + "',**kwargs)");
                                         }
                                         _kwargsToBuild.Clear();
                                     }
